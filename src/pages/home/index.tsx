@@ -1,10 +1,10 @@
     
-import { useState, FormEvent, useEffect } from 'react'
+import { useState, type FormEvent, useEffect } from 'react'
 import { BsSearch } from 'react-icons/bs'
 import styles from './home.module.css'
 import { Link, useNavigate } from 'react-router-dom'
 
-interface CoinProps {
+export interface CoinProps {
   id: string;
   name: string;
   symbol: string;
@@ -28,15 +28,16 @@ interface DataProp {
 export function Home() {
   const [input, setInput] = useState("");
   const [coins, setCoins] = useState<CoinProps[]>([]);
+  const [offset, setOffSet] = useState(0);
 
   const navigate = useNavigate();
 
   useEffect( ()=> {
     getData();
-  },[])
+  },[offset])
 
   async function getData(){
-    fetch("https://api.coincap.io/v2/assets?limit=10&offset=0")
+    fetch(`https://rest.coincap.io/v3/assets?limit=10&offset=${offset}&apiKey=556a859a0c5ea8fd6dbfed37bc4c49d8ef504f04bea7bc5469452110988c7ae8210989`)
     .then(response => response.json())
     .then((data: DataProp) => {
      const coinsData =data.data;
@@ -62,7 +63,9 @@ export function Home() {
           }
           return formated
         })
-        setCoins(formatResult)        
+        const listCoins = [...coins, ...formatResult]
+        setCoins(listCoins)        
+        console.log (listCoins)
     })
   }
 
@@ -74,7 +77,12 @@ export function Home() {
   }
 
   function handleGetMore(){
-    alert("Mais info")
+   if (offset === 0) {
+      setOffSet(10);
+      return
+   }
+
+   setOffSet(offset + 10)
   }
 
   return (
@@ -106,7 +114,7 @@ export function Home() {
                 <td className={styles.tdLabel} data-label="Moeda">
                   <div className={styles.name}>
                     <img className={styles.logo}
-                    src={`https://assets.coincap.io/assets/icons/${item.symbol.toLowerCase()}.@2x.png`} 
+                    src={`https://assets.coincap.io/assets/icons/${item.symbol.toLowerCase()}@2x.png`}                      
                     alt="Logo Cripto" />
                     <Link to={`/detail/${item.id}`}>
                       <span>{item.name}</span> | {item.symbol}
